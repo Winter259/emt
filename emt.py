@@ -69,8 +69,10 @@ def check_dev_dir(dev_dir,mod_name):
 def try_to_pack_pbo(repo_dir,dev_dir,mod_name):
     if check_dev_dir(dev_dir,mod_name):
         pack_new_pbo(dev_dir,repo_dir)
+        return True
     else:
         print("Something went wrong with the directories") # TODO: Replace and make optional
+        return False
 
 def pack_new_pbo(dev_repo,repo_dir):
     try:
@@ -103,6 +105,5 @@ batch_file_path = get_config_option("bat_path")
 # clear old pbo
 clear_old_mod(repository_directory,pbo_name)
 # pack pbo
-try_to_pack_pbo(repository_directory,dev_directory,mod_name)
-# start the bat file
-start_arma(batch_file_path)
+if try_to_pack_pbo(repository_directory,dev_directory,mod_name):
+    start_arma(batch_file_path)
