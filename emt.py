@@ -59,11 +59,11 @@ def clear_old_mod(repo_dir,pbo):
 def check_dev_dir(dev_dir,mod_name):
     current_files = os.listdir(dev_dir)
     print("Files in the Dev directory: {}".format(current_files))
-    if mod_name + ".h"  in current_files:
-        print("A header file by the name of {} exists in the dev directory".format(mod_name + ".h"))
+    if "config.cpp" in current_files:
+        print("A config.cpp file was present in the dev directory")
         return True
     else:
-        print("A header file by the name of {} does not exist in the dev directory".format(mod_name + ".h"))
+        print("A config.cpp file was not present in the dev directory")
         return False
 
 def try_to_pack_pbo(repo_dir,dev_dir,mod_name):
