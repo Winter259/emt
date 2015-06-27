@@ -3,8 +3,6 @@ __author__ = "Winter"
 import configparser
 import os
 import subprocess
-from codecs import decode
-
 # check if settings.ini exists
 def check_config_existence(config_file):
     if not os.path.exists(config_file):
@@ -113,8 +111,8 @@ def make_mod_dirs_list(repo_dir):
     return mod_list
 
 def start_arma(a3_path,a3_prof,a3_miss,repo_dir):
-    # ArmA has to know about anything in the repo dir, because of dependencies like CBA
     a3_path = os.path.join(a3_path,"arma3.exe") # adding arma3.exe to the end of the path
+    # ArmA has to know about anything in the repo dir, because of dependencies like CBA
     mods_used = "-mod=" + make_mod_dirs_list(repo_dir)
     world = "-world=empty"
     arguments = [a3_path, mods_used, a3_prof, world, "-noSplash","-noFilePatching","-showscripterrors",a3_miss]
