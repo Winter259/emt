@@ -38,6 +38,7 @@ def check_config_option(option_name,config_option_name,example_prompt):
 
 def check_configs():
     check_config_existence(config_file)
+    check_config_option("MakePBO","makepbo_path","Example: C:\Program Files (x86)\Mikero\DePboTools\\bin")
     check_config_option("Mod Name","mod_name","Example: myaddon")
     check_config_option("Repository Directory","repo_dir","Example: G:\Arma\Modset\@Mod\\addons")
     check_config_option("Mod Dev Directory","dev_dir","Example: G:\Arma\Dev\myaddon") # currently needs to point at specific mod
@@ -66,6 +67,18 @@ def check_dev_dir(dev_dir,mod_name):
         print("A config.cpp file was not present in the dev directory")
         return False
 
+def path_list():
+    return (os.environ['PATH']).split(";")
+
+def check_makepbo(makepbo_path):
+    print("Checking if MakePBO is present...")
+    print(path_list())
+    if makepbo_path in path_list():
+        print("Mikero's Tools are present in the PATH variable")
+        return True
+    else:
+        print("Mikero's Tools are not in the PATH variable")
+
 def try_to_pack_pbo(repo_dir,dev_dir,mod_name):
     if check_dev_dir(dev_dir,mod_name):
         pack_new_pbo(dev_dir,repo_dir)
@@ -87,14 +100,14 @@ def start_arma(bat_path):
     print("Attempting to run the batch file to start A3...")
     p = subprocess.Popen(bat_path, shell=True, stdout = subprocess.PIPE)
     stdout, stderr = p.communicate()
-    if p.returncode == 0:
-        print("Batch file successfully run.")
 
 config_file = "settings.ini"
 # init config
 config = configparser.ConfigParser()
 # check config's existence
 check_configs()
+# check if makepbo is present
+check_makepbo(get_config_option("makepbo_path"))
 # set globals
 repository_directory = get_config_option("repo_dir")
 mod_name = get_config_option("mod_name")
