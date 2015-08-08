@@ -1,28 +1,60 @@
 __author__ = "Winter"
 
-from iniparse import INIConfig
-import configparser
+from datetime import datetime
+from evergreen import configuration
 import os
 import subprocess
 
+MAKEPBO_FILE_NAME = "makepbo.exe"
+CONFIG_FILE_NAME = "settings.ini"
+CURRENT_TIME = datetime.now().time()
+CURRENT_TIME_STR = str(CURRENT_TIME)
+CURRENT_DATE = datetime.now().date()
+CURRENT_DATE_STR = str(CURRENT_DATE)
+
 def main():
     config_file = "settings.ini"
-    # init config
-    config = configparser.ConfigParser()
-    # check config's existence
-    check_configs()
-    # check if makepbo is present
-    check_makepbo(get_config_option("makepbo_dir"))
-    # set globals
-    arma3_directory = get_config_option("a3_dir")
-    arma3_profile_name = get_config_option("a3_prof")
-    arma3_mission_path = get_config_option("a3_miss")
-    repository_directory = get_config_option("repo_dir")
-    mod_name = get_config_option("mod_name")
-    mods_directory = os.path.join(repository_directory,"@" + mod_name,"addons")
-    pbo_name = mod_name + ".pbo"
-    pbo_path = os.path.join(mods_directory,pbo_name)
-    dev_directory = get_config_option("dev_dir")
+    # init a configuration instance
+    evergreen = configuration(CONFIG_FILE_NAME)
+    settings_instance = evergreen.open_instance()
+    # write the metadata
+    evergreen.write_meta_data(settings_instance, CURRENT_DATE_STR, CURRENT_TIME_STR)
+    # check if config options are all present
+    settings_required = [
+        ['directories', 'game_dir'],
+        ['directories', 'makepbo_dir'],
+        ['directories', 'repo_dir'],
+        ['directories', 'mod_dev_dir'],
+        ['paths', 'mission_path'],
+        ['settings', 'profile_name'],
+        ['settings', 'mod_name']
+    ]
+    for section, option in settings_required:
+        evergreen.check_value(settings_instance, section, option)
+    # set global variables
+    arma_game_directory = evergreen.return_value(settings_instance, 'directories', 'game_dir')
+    makepbo_dir = evergreen.return_value(settings_instance, 'directories', 'makepbo_dir')
+    mod_repository_directory = evergreen.return_value(settings_instance, 'directories', 'repo_dir')
+    mod_development_directory = evergreen.return_value(settings_instance, 'directories', 'mod_dev_dir')
+    arma_mission_path = evergreen.return_value(settings_instance, 'paths', 'mission_path')
+    arma_profile_name = evergreen.return_value(settings_instance, 'settings', 'profile_name')
+    arma_mod_name = evergreen.return_value(settings_instance, 'settings', 'mod_name')
+    # is makepbo present?
+    print('Checking for MakePBO')
+    # check in the path list
+    path_list = (os.environ['PATH']).split(';')
+    print_list('PATH list:', path_list)
+    if makepbo_dir in path_list:
+        print('MakePBO is present in the PATH list')
+    else:
+        print('MakePBO is not present. Install it!')
+        return -1
+
+def print_list(prompt='', list=[]):
+    print(prompt)
+    for element in list:
+        print('\t{}'.format(element))
+"""
     # clear old pbo
     clear_old_mod(mods_directory,pbo_name)
     # try to pack the pbo
@@ -30,20 +62,17 @@ def main():
         # if pbo is fine, try to start arma
         start_arma(arma3_directory,arma3_profile_name,arma3_mission_path,repository_directory)
 
-# check if settings.ini exists
-def check_config_existence(config_file):
-    if not os.path.exists(config_file):
-        print("settings.ini is not present, deploying one now...")
-        configfile = open("\\" + config_file,"w")
-        config.add_section("main")
-        with open(config_file,"w") as configfile:
-            config.write(configfile)
-        print("Successfully deployed new settings.ini: {}".format(os.path.exists(config_file)))
-    else:
-        print("settings.ini is present")
+def check_configs(config_file):
+    check_config_option(config_file, "ArmA 3 Directory","a3_dir","Example: C:\Program Files (x86)\Steam\SteamApps\common\Arma 3")
+    check_config_option(config_file, "ArmA 3 Profile Name","a3_prof","Example: IamNotDyslexci")
+    check_config_option(config_file, "ArmA 3 Mission Path","a3_miss","Example: G:\Documents\Arma 3 - Other Profiles\Profile\missions\Dev.stratis\mission.sqm")
+    check_config_option(config_file, "MakePBO","makepbo_dir","Example: C:\Program Files (x86)\Mikero\DePboTools\bin")
+    check_config_option(config_file, "Mod Name","mod_name","Example: myaddon")
+    check_config_option(config_file, "Repository Directory","repo_dir","Example: G:\Arma\Modset")
+    check_config_option(config_file, "Mod Dev Directory","dev_dir","Example: G:\Arma\Dev\myaddon") # currently needs to point at specific mod
 
 # checks if an option (example: repo_dir) is present in the config and if not, asks for the value
-def check_config_option(option_name,config_option_name,example_prompt):
+def check_config_option(config_file, option_name,config_option_name,example_prompt):
     config.read(config_file)
     try:
        config.get("main",config_option_name)
@@ -62,15 +91,7 @@ def check_config_option(option_name,config_option_name,example_prompt):
     else:
         print("{} is: {}".format(option_name,config.get("main",config_option_name)))
 
-def check_configs():
-    check_config_existence(config_file)
-    check_config_option("ArmA 3 Directory","a3_dir","Example: C:\Program Files (x86)\Steam\SteamApps\common\Arma 3")
-    check_config_option("ArmA 3 Profile Name","a3_prof","Example: IamNotDyslexci")
-    check_config_option("ArmA 3 Mission Path","a3_miss","Example: G:\Documents\Arma 3 - Other Profiles\Profile\missions\Dev.stratis\mission.sqm")
-    check_config_option("MakePBO","makepbo_dir","Example: C:\Program Files (x86)\Mikero\DePboTools\bin")
-    check_config_option("Mod Name","mod_name","Example: myaddon")
-    check_config_option("Repository Directory","repo_dir","Example: G:\Arma\Modset")
-    check_config_option("Mod Dev Directory","dev_dir","Example: G:\Arma\Dev\myaddon") # currently needs to point at specific mod
+
 
 def get_config_option(config_option_name):
     config.read(config_file)
@@ -96,19 +117,6 @@ def check_dev_dir(dev_dir,mod_name):
         print("A config.cpp file was not found in the dev directory")
         return False
 
-def path_list():
-    return (os.environ['PATH']).split(";")
-
-def check_makepbo(makepbo_path):
-    print("Checking if MakePBO is present...")
-    # trying in the PATH variable first
-    if makepbo_path in path_list():
-        print("Mikero's Tools are present in the PATH variable")
-        return True
-    else:
-        print("Mikero's Tools are not in the PATH variable")
-
-        return False
 
 def try_to_pack_pbo(repo_dir,dev_dir,mod_name):
     if check_dev_dir(dev_dir,mod_name):
@@ -151,6 +159,6 @@ def start_arma(a3_path,a3_prof,a3_miss,repo_dir):
         print("ArmA 3 didn't manage to start!")
     else:
         print("ArmA 3 successfully started")
-
+"""
 if __name__ == "__main__":
     main()
