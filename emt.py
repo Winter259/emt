@@ -1,8 +1,35 @@
 __author__ = "Winter"
 
+from iniparse import INIConfig
 import configparser
 import os
 import subprocess
+
+def main():
+    config_file = "settings.ini"
+    # init config
+    config = configparser.ConfigParser()
+    # check config's existence
+    check_configs()
+    # check if makepbo is present
+    check_makepbo(get_config_option("makepbo_dir"))
+    # set globals
+    arma3_directory = get_config_option("a3_dir")
+    arma3_profile_name = get_config_option("a3_prof")
+    arma3_mission_path = get_config_option("a3_miss")
+    repository_directory = get_config_option("repo_dir")
+    mod_name = get_config_option("mod_name")
+    mods_directory = os.path.join(repository_directory,"@" + mod_name,"addons")
+    pbo_name = mod_name + ".pbo"
+    pbo_path = os.path.join(mods_directory,pbo_name)
+    dev_directory = get_config_option("dev_dir")
+    # clear old pbo
+    clear_old_mod(mods_directory,pbo_name)
+    # try to pack the pbo
+    if try_to_pack_pbo(mods_directory,dev_directory,mod_name):
+        # if pbo is fine, try to start arma
+        start_arma(arma3_directory,arma3_profile_name,arma3_mission_path,repository_directory)
+
 # check if settings.ini exists
 def check_config_existence(config_file):
     if not os.path.exists(config_file):
@@ -125,26 +152,5 @@ def start_arma(a3_path,a3_prof,a3_miss,repo_dir):
     else:
         print("ArmA 3 successfully started")
 
-config_file = "settings.ini"
-# init config
-config = configparser.ConfigParser()
-# check config's existence
-check_configs()
-# check if makepbo is present
-check_makepbo(get_config_option("makepbo_dir"))
-# set globals
-arma3_directory = get_config_option("a3_dir")
-arma3_profile_name = get_config_option("a3_prof")
-arma3_mission_path = get_config_option("a3_miss")
-repository_directory = get_config_option("repo_dir")
-mod_name = get_config_option("mod_name")
-mods_directory = os.path.join(repository_directory,"@" + mod_name,"addons")
-pbo_name = mod_name + ".pbo"
-pbo_path = os.path.join(mods_directory,pbo_name)
-dev_directory = get_config_option("dev_dir")
-# clear old pbo
-clear_old_mod(mods_directory,pbo_name)
-# try to pack the pbo
-if try_to_pack_pbo(mods_directory,dev_directory,mod_name):
-    # if pbo is fine, try to start arma
-    start_arma(arma3_directory,arma3_profile_name,arma3_mission_path,repository_directory)
+if __name__ == "__main__":
+    main()
