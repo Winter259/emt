@@ -62,18 +62,30 @@ class configuration:
             return option_return
 
     def set_value(self, config_instance, section, option, value, force_section_make=False):
-        if not config_instance.check_section(config_instance, section):
+        if not self.check_section(config_instance, section):
             config_print('The section: {} does not exist within the config: {}'.format(section, self.file_name))
             if force_section_make:
-                config_instance.add_section(config_instance, section)
+                self.add_section(config_instance, section)
             else:
                 config_print('A value could not be set inside a non-existant section (section was not force created)')
                 return None
         else:
-            config_file = open(self.location, 'w')
+            config_file = open(self.path, 'w')
             config_instance.set(section, option, value)
             config_instance.write(config_file)
             config_file.close()
+
+    def check_value(self, config_instance, section, option):
+        return_value = self.return_value(config_instance, section, option)
+        if return_value is None:
+            new_value = input('A value is required for the option: {} in the section: {} of the config: {}\nPlease enter one now: '.format(option, section, self.file_name))
+            self.set_value(config_instance, section, option, new_value, force_section_make=True)
+        else:
+            return return_value
+
+    def write_meta_data(self, config_instance, date, time):
+        self.set_value(config_instance, 'metadata', 'date_exec', date, force_section_make=True)
+        self.set_value(config_instance, 'metadata', 'time_exec', time)
 
 
 def config_print(message=''):
@@ -86,6 +98,7 @@ def main():
     print(evergreen.return_sections(settings_instance))
     evergreen.add_section(settings_instance, 'cats')
     print(evergreen.return_value(settings_instance, 'cats', 'ginger'))
+    evergreen.check_value(settings_instance, 'dogs', 'fido', 'alive')
 
 if __name__ == "__main__":
     evergreen_debug = True
