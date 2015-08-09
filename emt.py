@@ -3,6 +3,7 @@ __author__ = "Winter"
 from datetime import datetime
 from evergreen import configuration
 import os
+import winshell
 import subprocess
 
 MAKEPBO_FILE_NAME = "makepbo.exe"
@@ -49,27 +50,31 @@ def main():
     else:
         print('MakePBO is not present. Install it!')
         return -1
+    # setup the pbo name
+    pbo_file = arma_mod_name + ".pbo"
+    # remove the old pbo
+    print(r'Checking the mod directory for the old pbo')
+    current_mods = os.listdir(mod_repository_directory)
+    print_list('Current mods:', current_mods)
+    if pbo_file in current_mods:
+        pbo_path = os.path.join(mod_repository_directory, pbo_file)
+        print(r'Mod found at the path: {}'.format(pbo_path))
+        print('Removing old mod pbo')
+        winshell.delete_file(pbo_path, no_confirm=True)
+    else:
+        print('There is no old version of the mod in the repository')
+
 
 def print_list(prompt='', list=[]):
     print(prompt)
     for element in list:
         print('\t{}'.format(element))
 """
-    # clear old pbo
-    clear_old_mod(mods_directory,pbo_name)
     # try to pack the pbo
     if try_to_pack_pbo(mods_directory,dev_directory,mod_name):
         # if pbo is fine, try to start arma
         start_arma(arma3_directory,arma3_profile_name,arma3_mission_path,repository_directory)
 
-def check_configs(config_file):
-    check_config_option(config_file, "ArmA 3 Directory","a3_dir","Example: C:\Program Files (x86)\Steam\SteamApps\common\Arma 3")
-    check_config_option(config_file, "ArmA 3 Profile Name","a3_prof","Example: IamNotDyslexci")
-    check_config_option(config_file, "ArmA 3 Mission Path","a3_miss","Example: G:\Documents\Arma 3 - Other Profiles\Profile\missions\Dev.stratis\mission.sqm")
-    check_config_option(config_file, "MakePBO","makepbo_dir","Example: C:\Program Files (x86)\Mikero\DePboTools\bin")
-    check_config_option(config_file, "Mod Name","mod_name","Example: myaddon")
-    check_config_option(config_file, "Repository Directory","repo_dir","Example: G:\Arma\Modset")
-    check_config_option(config_file, "Mod Dev Directory","dev_dir","Example: G:\Arma\Dev\myaddon") # currently needs to point at specific mod
 
 # checks if an option (example: repo_dir) is present in the config and if not, asks for the value
 def check_config_option(config_file, option_name,config_option_name,example_prompt):
@@ -96,16 +101,6 @@ def check_config_option(config_file, option_name,config_option_name,example_prom
 def get_config_option(config_option_name):
     config.read(config_file)
     return config.get("main",config_option_name)
-
-def clear_old_mod(mod_dir,pbo):
-    print(mod_dir)
-    current_files = os.listdir(mod_dir)
-    print("Files in the Repository directory: {}".format(current_files))
-    if pbo in current_files:
-        print("Removing the old {}...".format(pbo))
-        os.remove(os.path.join(mod_dir,pbo))
-    else:
-        print("{} is not present in the repository".format(pbo))
 
 def check_dev_dir(dev_dir,mod_name):
     current_files = os.listdir(dev_dir)
