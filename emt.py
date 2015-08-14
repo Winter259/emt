@@ -33,6 +33,7 @@ def main():
         ['settings', 'mod_name'],
         ['settings', 'mod_container_name'],
         ['settings', 'arma_exe'],
+        ['settings', 'arma_server_exe'],
         ['settings', 'misc_client_params'],
         ['settings', 'launch_dedi']
     ]
@@ -49,6 +50,7 @@ def main():
     mod_name = evergreen.return_value(settings_instance, 'settings', 'mod_name')
     mod_container_name = evergreen.return_value(settings_instance, 'settings', 'mod_container_name')
     executable_name = evergreen.return_value(settings_instance, 'settings', 'arma_exe')
+    server_executable_name = evergreen.return_value(settings_instance, 'settings', 'arma_server_exe')
     misc_client_params = evergreen.return_value(settings_instance, 'settings', 'misc_client_params')
     launch_dedicated_server = evergreen.return_value(settings_instance, 'settings', 'launch_dedi')
     # is makepbo present?
@@ -104,7 +106,7 @@ def main():
     client_start_arguments = [executable_path, profile_param, mods_used_parameter, world_param]
     client_start_arguments.extend(client_params)
     if int(launch_dedicated_server) == 1:
-        server_executable_path = os.path.join(game_directory, 'arma3sever.exe')
+        server_executable_path = os.path.join(game_directory, server_executable_name)
         config_param = '-config=' + server_config_path
         server_start_arguments = [server_executable_path, config_param, mods_used_parameter]
         print_list('Starting ArmA dedicated server using the following parameters:', server_start_arguments)
@@ -139,7 +141,7 @@ def print_list(prompt='', list=[]):
 def pause(prompt='', time=10):
     count = time
     while count > 0:
-        print('{}: {}'.format(count, prompt))
+        print('{}: {}\r'.format(count, prompt))
         sleep(1)
         count -=1
 
