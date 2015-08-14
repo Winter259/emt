@@ -34,6 +34,7 @@ def main():
         ['settings', 'mod_container_name'],
         ['settings', 'arma_exe'],
         ['settings', 'arma_server_exe'],
+        ['settings', 'arma_server_pass'],
         ['settings', 'misc_client_params'],
         ['settings', 'launch_dedi']
     ]
@@ -51,6 +52,7 @@ def main():
     mod_container_name = evergreen.return_value(settings_instance, 'settings', 'mod_container_name')
     executable_name = evergreen.return_value(settings_instance, 'settings', 'arma_exe')
     server_executable_name = evergreen.return_value(settings_instance, 'settings', 'arma_server_exe')
+    server_password = evergreen.return_value(settings_instance, 'settings', 'arma_server_pass')
     misc_client_params = evergreen.return_value(settings_instance, 'settings', 'misc_client_params')
     launch_dedicated_server = evergreen.return_value(settings_instance, 'settings', 'launch_dedi')
     # is makepbo present?
@@ -118,8 +120,8 @@ def main():
             print(process.returncode)
         else:
             print("ArmA 3 Dedicated Server successfully started")
-            pause('Waiting 10 seconds for the server to start up', 10)
-            client_start_arguments.append('-connect=127.0.0.1')  # make client connect to the dedicated server
+            pause('Waiting for the server to start', 10)
+            client_start_arguments.extend(['-connect=127.0.0.1', '-password=' + server_password])  # make client connect to the dedicated server
     else:
         print('Starting ArmA in editor')
         client_start_arguments.append(mission_path)
@@ -141,7 +143,7 @@ def print_list(prompt='', list=[]):
 def pause(prompt='', time=10):
     count = time
     while count > 0:
-        print('{}: {}\r'.format(count, prompt))
+        print('{}: {}'.format(count, prompt), end='\r')
         sleep(1)
         count -=1
 
