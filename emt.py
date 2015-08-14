@@ -1,5 +1,6 @@
 __author__ = "Winter"
 
+from time import sleep
 from datetime import datetime
 from evergreen import configuration
 import os
@@ -106,11 +107,21 @@ def main():
         server_executable_path = os.path.join(game_directory, 'arma3sever.exe')
         config_param = '-config=' + server_config_path
         server_start_arguments = [server_executable_path, config_param, mods_used_parameter]
-        print('Starting dedicated server... #placeholder#')
+        print_list('Starting ArmA dedicated server using the following parameters:', server_start_arguments)
+        try:
+            process = subprocess.Popen(server_start_arguments)
+        except subprocess.CalledProcessError as error:
+            print("ArmA 3 Server didn't manage to start!")
+            output = process.communicate()[0]
+            print(process.returncode)
+        else:
+            print("ArmA 3 Dedicated Server successfully started")
+            pause('Waiting 10 seconds for the server to start up', 10)
+            client_start_arguments.append('-connect=127.0.0.1')  # make client connect to the dedicated server
     else:
         print('Starting ArmA in editor')
         client_start_arguments.append(mission_path)
-    print_list('Starting ArmA using the following parameters:', client_start_arguments)
+    print_list('Starting ArmA client using the following parameters:', client_start_arguments)
     try:
         process = subprocess.Popen(client_start_arguments)
     except subprocess.CalledProcessError as error:
@@ -124,6 +135,13 @@ def print_list(prompt='', list=[]):
     print(prompt)
     for element in list:
         print('\t{}'.format(element))
+
+def pause(prompt='', time=10):
+    count = time
+    while count > 0:
+        print('{}: {}'.format(count, prompt))
+        sleep(1)
+        count -=1
 
 if __name__ == "__main__":
     main()
