@@ -13,6 +13,7 @@ CURRENT_TIME = datetime.now().time()
 CURRENT_TIME_STR = str(CURRENT_TIME)
 CURRENT_DATE = datetime.now().date()
 CURRENT_DATE_STR = str(CURRENT_DATE)
+SERVER_STARTUP_DELAY = 10
 
 def main():
     config_file = "settings.ini"
@@ -120,7 +121,7 @@ def main():
             print(process.returncode)
         else:
             print("ArmA 3 Dedicated Server successfully started")
-            pause('Waiting for the server to start', 10)
+            pause('Waiting for the server to start ', SERVER_STARTUP_DELAY)
             client_start_arguments.extend(['-connect=127.0.0.1', '-password=' + server_password])  # make client connect to the dedicated server
     else:
         print('Starting ArmA in editor')
